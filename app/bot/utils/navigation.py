@@ -38,6 +38,7 @@ class NavSubscription(str, Enum):
     EXTEND = "extend"
     PROCESS = "process"
     DEVICES = "devices"
+    LOCATION = "location"
     DURATION = "duration"
     PROMOCODE = "promocode"
     GET_TRIAL = "get_trial"
@@ -66,7 +67,6 @@ class NavAdminTools(str, Enum):
     SYNC_SERVERS = "sync_servers"
     STATISTICS = "statistics"
     USER_EDITOR = "user_editor"
-
     INVITE_EDITOR = "invite_editor"
     CREATE_INVITE = "create_invite"
     DELETE_INVITE = "delete_invite"

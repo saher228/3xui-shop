@@ -1,5 +1,6 @@
 import logging
 from dataclasses import dataclass
+from typing import Optional
 
 from py3xui import AsyncApi
 from sqlalchemy.ext.asyncio import async_sessionmaker
@@ -131,13 +132,26 @@ class ServerPoolService:
             user.server_id = server.id
             await User.update(session=session, tg_id=user.tg_id, server_id=server.id)
 
-    async def get_available_server(self) -> Server | None:
+    async def get_all_servers(self) -> list[Server]:
+        """Get all servers from the database."""
+        async with self.session() as session:
+            return await Server.get_all(session)
+
+    async def get_available_server(self, location: Optional[str] = None) -> Server | None:
+        """Get an available server, optionally filtered by location."""
         await self.sync_servers()
 
+        available_servers = [
+            conn.server for conn in self._servers.values()
+            if conn.server.online and (location is None or conn.server.location == location)
+        ]
+
+        if not available_servers:
+            return None
+
         servers_with_free_slots = [
-            conn.server
-            for conn in self._servers.values()
-            if conn.server.current_clients < conn.server.max_clients
+            server for server in available_servers
+            if server.current_clients < server.max_clients
         ]
 
         if servers_with_free_slots:
@@ -148,9 +162,8 @@ class ServerPoolService:
             )
             return server
 
-        servers_least_loaded = [conn.server for conn in self._servers.values()]
-        if servers_least_loaded:
-            server = sorted(servers_least_loaded, key=lambda s: s.current_clients)[0]
+        if available_servers:
+            server = sorted(available_servers, key=lambda s: s.current_clients)[0]
             logger.warning(
                 f"No servers with free slots. Using least loaded server: {server.name} "
                 f"(clients: {server.current_clients}/{server.max_clients})"
