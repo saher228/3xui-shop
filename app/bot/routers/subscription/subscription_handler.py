@@ -147,12 +147,61 @@ async def callback_subscription_change(
     callback_data: SubscriptionData,
     services: ServicesContainer,
 ) -> None:
-    logger.info(f"User {user.tg_id} started change subscription.")
-    callback_data.state = NavSubscription.DEVICES
+    logger.info(f"User {user.tg_id} started change subscription. Initial cb: {callback_data.model_dump_json(exclude_none=True)}")
+
+    client_exists = await services.vpn.is_client_exists(user)
+    current_devices = 0
+    if user.server_id and client_exists:
+        try:
+            client = client_exists 
+            if not client:
+                 client = await services.vpn.get_client_by_user_id(user.tg_id)
+
+            if client: 
+                current_devices = await services.vpn.get_limit_ip(user=user, client=client)
+            else: 
+                logger.warning(f"User {user.tg_id} has server_id but client object could not be retrieved for changing subscription.")
+
+        except Exception as e:
+            logger.error(f"Error fetching current_devices for user {user.tg_id} during change subscription: {e}")
+            current_devices = 0 
+
+    if current_devices == 0:
+        logger.warning(f"User {user.tg_id} trying to change subscription but current_devices is 0 or not found. User has subscription: {bool(user.server_id)}")
+        await services.notification.show_popup(
+            callback=callback,
+            text=_("subscription:popup:error_fetching_current_plan"), 
+        )
+        cb_to_main = callback_data.model_copy(deep=True)
+        cb_to_main.state = NavSubscription.MAIN
+        cb_to_main.devices = 0; cb_to_main.location = ""; cb_to_main.duration = 0; cb_to_main.is_change = False; cb_to_main.is_extend = False
+        
+        client_data_for_main = None
+        if user.server_id:
+            client_data_for_main = await services.vpn.get_client_data(user)
+
+        await callback.message.edit_text(
+            text=callback.message.text, 
+            reply_markup=subscription_keyboard(
+                has_subscription=bool(client_data_for_main), 
+                callback_data=cb_to_main
+            )
+        )
+        await show_subscription(callback=callback, client_data=client_data_for_main, callback_data=cb_to_main)
+        return
+
+    callback_data.devices = current_devices
     callback_data.is_change = True
+    callback_data.state = NavSubscription.LOCATION
+    callback_data.location = "" 
+    callback_data.duration = 0 
+
+    servers = await services.server_pool.get_all_servers()
+    
+    logger.info(f"User {user.tg_id} changing subscription (current_devices={current_devices}), proceeding to location selection. Callback: {callback_data.model_dump_json(exclude_none=True)}")
     await callback.message.edit_text(
-        text=_("subscription:message:devices"),
-        reply_markup=devices_keyboard(services.plan.get_all_plans(), callback_data),
+        text=_("subscription:message:location"),
+        reply_markup=location_keyboard(servers, callback_data),
     )
 
 
@@ -252,6 +301,27 @@ async def callback_location_selected(
         
     selected_location_name = unique_location_names[location_idx]
     logger.info(f"User {user.tg_id} selected location index: {location_idx}, name: {selected_location_name}")
+
+    server_to_test_login = next((s for s in all_servers if s.location == selected_location_name and s.online), None)
+    
+    if server_to_test_login:
+        logger.info(f"User {user.tg_id}: Attempting test login to server '{server_to_test_login.name}' (ID: {server_to_test_login.id}) in location '{selected_location_name}'.")
+        from py3xui import AsyncApi
+        test_api = AsyncApi(
+            host=server_to_test_login.host,
+            username=config.xui.USERNAME,
+            password=config.xui.PASSWORD,
+            token=config.xui.TOKEN,
+            logger=logging.getLogger(f"xui_test_login_{server_to_test_login.name}"),
+        )
+        try:
+            await test_api.login()
+            logger.info(f"User {user.tg_id}: Test login to server '{server_to_test_login.name}' SUCCEEDED.")
+        except Exception as e:
+            logger.warning(f"User {user.tg_id}: Test login to server '{server_to_test_login.name}' FAILED. Error: {e}. Proceeding with subscription flow.")
+    else:
+        logger.warning(f"User {user.tg_id}: No online server found in location '{selected_location_name}' to perform a test login. This was checked before, but good to note.")
+
 
     available_server = next((s for s in all_servers if s.location == selected_location_name and s.online), None)
             

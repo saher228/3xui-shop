@@ -268,16 +268,31 @@ def location_keyboard(servers: List[Server], callback_data: SubscriptionData) ->
         )
     builder.adjust(1)
 
-    back_to_devices_callback = callback_data.model_copy(deep=True)
-    back_to_devices_callback.state = NavSubscription.DEVICES 
-    back_to_devices_callback.devices = 0 
-    back_to_devices_callback.location = "" 
-    back_to_devices_callback.duration = 0 
-    builder.row(
-        InlineKeyboardButton(
-            text=_("subscription:button:change_devices"), 
-            callback_data=back_to_devices_callback.pack(),
+    if callback_data.is_change:
+        back_cb = callback_data.model_copy(deep=True)
+        back_cb.state = NavSubscription.MAIN
+        back_cb.devices = 0 
+        back_cb.location = ""
+        back_cb.duration = 0
+        back_cb.is_change = False 
+        back_cb.is_extend = False
+        builder.row(
+            InlineKeyboardButton(
+                text=_("misc:button:back"), 
+                callback_data=back_cb.pack(),
+            )
         )
-    )
+    else:
+        back_to_devices_callback = callback_data.model_copy(deep=True)
+        back_to_devices_callback.state = NavSubscription.DEVICES 
+        back_to_devices_callback.devices = 0 
+        back_to_devices_callback.location = "" 
+        back_to_devices_callback.duration = 0 
+        builder.row(
+            InlineKeyboardButton(
+                text=_("subscription:button:change_devices"), 
+                callback_data=back_to_devices_callback.pack(),
+            )
+        )
     builder.row(back_to_main_menu_button())
     return builder.as_markup()
