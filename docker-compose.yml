@@ -1,28 +1,4 @@
 services:
-  traefik:
-    image: "traefik:v3.0"
-    container_name: "traefik"
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    env_file:
-      - .env
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "letsencrypt_data:/letsencrypt"
-    command:
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--certificatesresolvers.letsencrypt.acme.email=${LETSENCRYPT_EMAIL}"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
-      - "--log.level=INFO"
-    labels:
-      - "traefik.enable=true"
-
   redis:
     image: redis:latest
     container_name: 3xui-shop-redis
@@ -32,7 +8,9 @@ services:
 
   bot:
     build: .
-    container_name: 3xui-shop-bot
+    container_name: 3xui-shop-bot 
+    ports:
+      - "8443:8443"
     volumes:
       - ./app/data:/app/data
       - ./plans.json:/app/data/plans.json
@@ -53,8 +31,8 @@ services:
       - "traefik.http.routers.bot.rule=Host(`${BOT_DOMAIN}`)"
       - "traefik.http.routers.bot.entrypoints=websecure"
       - "traefik.http.routers.bot.tls.certresolver=letsencrypt"
-      - "traefik.http.services.bot.loadbalancer.server.port=8080"
+      - "traefik.http.services.bot.loadbalancer.server.port=8443"
 
 volumes:
   redis_data:
-  letsencrypt_data:
+  letsencrypt_data: 

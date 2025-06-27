@@ -39,7 +39,7 @@
     - Добавление, удаление, отключение и проверка серверов в пуле
     - Автоматическое распределение новых клиентов по серверам
     - Управление серверами без перезапуска или перенастройки бота
-    - ~~Замена одного сервера другим~~
+    - Замена одного сервера другим (Смена локации) Доработка by SaHeR
 - **Промокоды**
     - Создание, редактирование и удаление промокодов
     - Промокоды для добавления дополнительного времени подписки
@@ -63,15 +63,20 @@
     - Гибкая архитектура для добавления новых платёжных шлюзов
     - ~~Добавление, редактирование и удаление тарифных планов в любое время~~
     - ~~Изменение порядка отображения вариантов оплаты~~
-- **~~Редактор пользователей~~**
-    - ~~Просмотр информации о пользователе~~
+- **Редактор пользователей** (by [@SaHeR](https://github.com/saher228))
+    - Просмотр информации о пользователе
+    - Редактирование подписки
+    - Смена локации пользователю
+    - Удаление пользователя с базы данных бота или с 3x-ui либо удаление везде
+    - Блокировка и разблокировка пользователей
+    - Создание пользователя в ручную
+    - Просмотр список пользователей
+    - Поиск пользователей по ключевым фразам либо указать id или @name
+    - ~~Быстрый доступ к пользователю через пересланное сообщение~~
+    - ~~Персональные скидки для пользователей~~
     - ~~Просмотр статистики рефералов~~
     - ~~Просмотр истории платежей и активированных промокодов~~
     - ~~Просмотр информации о сервере~~
-    - ~~Редактирование подписки~~
-    - ~~Блокировка и разблокировка пользователей~~
-    - ~~Быстрый доступ к пользователю через пересланное сообщение~~
-    - ~~Персональные скидки для пользователей~~
 
 ### ⚙️ Админ-панель
 Бот включает удобную панель администратора с инструментами для эффективного управления.
@@ -90,7 +95,7 @@
 - [x] Пробный период
 - [x] Реферальная система
 - [ ] Статистика
-- [ ] Редактор пользователей
+- [x] Редактор пользователей
 - [ ] Редактор планов
 - [ ] Гибкий пул серверов
 - [ ] Кастомные промокоды
@@ -107,7 +112,7 @@
 
 1. **Установка/Обновление:**
    ```bash
-   bash <(curl -Ls https://raw.githubusercontent.com/snoups/3xui-shop/main/scripts/install.sh) -q
+   bash <(curl -Ls https://raw.githubusercontent.com/saher228/3xui-shop/main/scripts/install.sh) -q
    cd 3xui-shop
    ```
 
@@ -126,10 +131,190 @@
    docker compose build
    ```
 
-2. **Запустите контейнер Docker:**
+2. **Запустите контейнер Docker выбрав docker-compose или docker-compose-traefik:**
+
    ```bash
-   docker compose up -d
+   # Используйте docker-compose.yml для обычной установки если используете Nginx
+   docker compose -f docker-compose.yml up -d
+
+   # Или docker-compose-traefik.yml для установки с Traefik
+   docker compose -f docker-compose-traefik.yml up -d
    ```
+
+3. **Конфиг Nginx если выбрали docker-compose.yml**
+
+   > [(Установка Nginx)](https://nginx.org/en/linux_packages.html)
+   >
+   > [(Установка Certbot Для получение сертификата домену)](https://certbot.eff.org/instructions?ws=nginx&os=snap) 
+   > Certbot вам не нужен если используете сертификат Cloudflaer
+
+    ```bash
+    # nano /etc/nginx/sites-enabled/bot.domian.com.conf
+    # Конфиг для бота SSL
+    server {
+        server_name bot.domian.com;
+        listen 80;
+    
+        location /{
+            proxy_pass http://127.0.0.1:8443;
+            proxy_set_header Host $host;
+        }
+    
+        listen 443 ssl; # managed by Certbot
+        ssl_certificate /etc/letsencrypt/live/bot.domian.com/fullchain.pem; 
+        ssl_certificate_key /etc/letsencrypt/live/bot.domian.com/privkey.pem; 
+    
+    }
+    
+    server {
+        if ($host = bot.domian.com) {
+            return 301 https://$host$request_uri;
+        }
+    
+    
+    
+        server_name bot.domian.com;
+        listen 80;
+        return 404;
+    
+    
+    }
+    ```
+    
+    ```bash
+    # nano /etc/nginx/sites-enabled/vpn.domian.com.conf
+    # Конфиг для Vpn Панели SSL
+    server {
+    
+        server_name vpn.domian.com;
+    
+    
+    
+        location / {
+            proxy_pass http://127.0.0.1:2053;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Frame-Options SAMEORIGIN;
+            proxy_buffers 256 16k;
+            proxy_buffer_size 16k;
+            proxy_read_timeout 600s;
+            proxy_cache_revalidate on;
+            proxy_cache_min_uses 2;
+            proxy_cache_use_stale timeout;
+            proxy_cache_lock on;
+            client_max_body_size 50M;
+        }
+    
+        location /user {
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Range $http_range;
+        proxy_set_header If-Range $http_if_range; 
+        proxy_redirect off;
+        proxy_pass http://127.0.0.1:2096;
+    }
+        
+            location ~ /\.ht {
+    
+            deny all;
+    
+        }
+    
+        listen 443 ssl;
+        ssl_certificate /root/cert-CF/vpn.domian.com/fullchain.pem; # Путь к сертификату если от    Cloudflaer
+        ssl_certificate_key /root/cert-CF/vpn.domian.com/privkey.pem;
+    }
+    
+    server {
+    
+        if ($host = vpn.domian.com) {
+        
+            return 301 https://$host$request_uri;
+    
+        }
+    
+    
+    
+    
+    
+        listen 80;
+    
+        server_name vpn.domian.com;
+    
+        return 404; 
+    
+    }
+    ```
+
+    ```bash
+    # nano /etc/nginx/sites-enabled/bot.domian.com.conf
+    # Конфиг для бота NON SSL
+    server {
+        server_name bot.domian.com;
+        listen 80;
+    
+        location /{
+            proxy_pass http://127.0.0.1:8443;
+            proxy_set_header Host $host;
+        }    
+    }
+    ```
+    
+    ```bash
+    # nano /etc/nginx/sites-enabled/vpn.domian.com.conf
+    # Конфиг для Vpn Панели NON SSL
+    server {
+    
+        server_name vpn.domian.com;
+    
+    
+    
+        location / {
+            proxy_pass http://127.0.0.1:2053;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Frame-Options SAMEORIGIN;
+            proxy_buffers 256 16k;
+            proxy_buffer_size 16k;
+            proxy_read_timeout 600s;
+            proxy_cache_revalidate on;
+            proxy_cache_min_uses 2;
+            proxy_cache_use_stale timeout;
+            proxy_cache_lock on;
+            client_max_body_size 50M;
+        }
+    
+        location /user {
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Range $http_range;
+        proxy_set_header If-Range $http_if_range; 
+        proxy_redirect off;
+        proxy_pass http://127.0.0.1:2096;
+    }
+        
+            location ~ /\.ht {
+    
+            deny all;
+    
+        }
+    
+    }
+
+    ```
+
+
+
 
 ### Настройка переменных окружения
 

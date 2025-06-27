@@ -1,0 +1,60 @@
+services:
+  traefik:
+    image: "traefik:v3.0"
+    container_name: "traefik"
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    env_file:
+      - .env
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "letsencrypt_data:/letsencrypt"
+    command:
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--certificatesresolvers.letsencrypt.acme.email=${LETSENCRYPT_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--log.level=INFO"
+    labels:
+      - "traefik.enable=true"
+
+  redis:
+    image: redis:latest
+    container_name: 3xui-shop-redis
+    restart: always
+    volumes:
+      - redis_data:/data
+
+  bot:
+    build: .
+    container_name: 3xui-shop-bot
+    volumes:
+      - ./app/data:/app/data
+      - ./plans.json:/app/data/plans.json
+      - ./app/locales:/app/locales
+      - ./app/logs:/app/logs
+    env_file:
+      - .env
+    stop_signal: SIGINT
+    restart: unless-stopped
+    command: sh -c " 
+      poetry run pybabel compile -d /app/locales -D bot && 
+      poetry run alembic -c /app/db/alembic.ini upgrade head && 
+      poetry run python /app/__main__.py"
+    depends_on:
+      - redis
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bot.rule=Host(`${BOT_DOMAIN}`)"
+      - "traefik.http.routers.bot.entrypoints=websecure"
+      - "traefik.http.routers.bot.tls.certresolver=letsencrypt"
+      - "traefik.http.services.bot.loadbalancer.server.port=8080"
+
+volumes:
+  redis_data:
+  letsencrypt_data:
