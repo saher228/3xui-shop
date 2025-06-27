@@ -110,10 +110,10 @@ class Yookassa(PaymentGateway):
         await self._on_payment_canceled(payment_id)
 
     async def webhook_handler(self, request: Request) -> Response:
-        ip = request.headers.get("X-Forwarded-For", request.remote)
+        # ip = request.headers.get("X-Forwarded-For", request.remote)
 
-        if not SecurityHelper().is_ip_trusted(ip):
-            return Response(status=403)
+        # if not SecurityHelper().is_ip_trusted(ip):
+        #     return Response(status=403)
 
         try:
             event_json = await request.json()

@@ -7,7 +7,7 @@
 
 set -e
 
-REPO_OWNER="snoups"
+REPO_OWNER="saher228"
 REPO_NAME="3xui-shop"
 VERSION_FILE=".version"
 TMP_DIR="/tmp/3xui-shop_update"

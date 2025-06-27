@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 import logging
 
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
 from app.config import Config
 from app.db.models import Referral, User
@@ -28,11 +28,11 @@ class SubscriptionService:
         logger.info("Subscription Service initialized")
 
     async def is_trial_available(self, user: User) -> bool:
-        is_first_check_ok = (
-            self.config.shop.TRIAL_ENABLED and not user.server_id and not user.is_trial_used
-        )
+        if not self.config.shop.TRIAL_ENABLED or user.is_trial_used:
+            return False
 
-        if not is_first_check_ok:
+        client = await self.vpn_service.is_client_exists(user)
+        if client:
             return False
 
         async with self.session_factory() as session:
@@ -40,37 +40,37 @@ class SubscriptionService:
 
         return not referral or (referral and not self.config.shop.REFERRED_TRIAL_ENABLED)
 
-    async def gift_trial(self, user: User) -> bool:
+    async def gift_trial(self, user: User, session: AsyncSession) -> User | None:
         if not await self.is_trial_available(user=user):
             logger.warning(
                 f"Failed to activate trial for user {user.tg_id}. Trial period is not available."
             )
-            return False
+            return None
 
-        async with self.session_factory() as session:
-            trial_used = await User.update_trial_status(
-                session=session, tg_id=user.tg_id, used=True
-            )
-
+        trial_used = await User.update_trial_status(
+            session=session, tg_id=user.tg_id, used=True
+        )
         if not trial_used:
-            logger.critical(f"Failed to activate trial for user {user.tg_id}.")
-            return False
+            logger.critical(f"Failed to update trial status for user {user.tg_id}.")
+            return None
 
+        user.is_trial_used = True
+        
         logger.info(f"Begun giving trial period for user {user.tg_id}.")
-        trial_success = await self.vpn_service.process_bonus_days(
+        updated_user = await self.vpn_service.process_bonus_days(
             user,
             duration=self.config.shop.TRIAL_PERIOD,
             devices=self.config.shop.BONUS_DEVICES_COUNT,
+            session=session,
         )
 
-        if trial_success:
+        if updated_user:
             logger.info(
                 f"Successfully gave {self.config.shop.TRIAL_PERIOD} days to a user {user.tg_id}"
             )
-            return True
+            return updated_user
 
-        async with self.session_factory() as session:
-            await User.update_trial_status(session=session, tg_id=user.tg_id, used=False)
+        await User.update_trial_status(session=session, tg_id=user.tg_id, used=False)
 
         logger.warning(f"Failed to apply trial period for user {user.tg_id} due to failure.")
-        return False
+        return None

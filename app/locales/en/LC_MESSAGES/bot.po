@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: bot 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-04-30 08:19+0500\n"
+"POT-Creation-Date: 2025-04-01 00:01+0500\n"
 "PO-Revision-Date: 2024-12-05 10:24+0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -90,245 +90,112 @@ msgstr "❌ Failed to send backup."
 msgid "backup:popup:error"
 msgstr "❌ An error occurred during backup."
 
-#: app/bot/routers/admin_tools/invites_handler.py:38
-msgid "invite_editor:message:main"
-msgstr ""
-"📊 <b>Invite Link Management</b>\n"
-"\n"
-"Here you can create and manage invite links to track user sources."
-
-#: app/bot/routers/admin_tools/invites_handler.py:50
-msgid "invite_editor:message:enter_name"
-msgstr ""
-"<b>Enter a name for the invite link.</b>\n"
-"<i>This name will be used to generate a unique tracking code.</i>"
-
-#: app/bot/routers/admin_tools/invites_handler.py:77
-msgid "invite_editor:message:created_success"
-msgstr ""
-"✅ <b>Invite link created successfully!</b>\n"
-"\n"
-"<b>Name:</b> {name}\n"
-"\n"
-"<b>Link:</b> <code>{link}</code>\n"
-"\n"
-"<i>Share this link to track users coming from this source.</i>"
-
-#: app/bot/routers/admin_tools/invites_handler.py:88
-msgid "invite_editor:ntf:create_failed"
-msgstr "❌ Failed to create invite link. Please try a different name."
-
-#: app/bot/routers/admin_tools/invites_handler.py:103
-#: app/bot/routers/admin_tools/invites_handler.py:121
-msgid "invite_editor:message:list"
-msgstr ""
-"📊 <b>Invite Links</b>\n"
-"\n"
-"<i>Select a link to see details:</i>"
-
-#: app/bot/routers/admin_tools/invites_handler.py:108
-msgid "invite_editor:message:no_invites"
-msgstr "<i>There are no invite links yet. Create your first invite link!</i>"
-
-#: app/bot/routers/admin_tools/invites_handler.py:140
-#: app/bot/routers/admin_tools/invites_handler.py:211
-#: app/bot/routers/admin_tools/invites_handler.py:253
-#: app/bot/routers/admin_tools/invites_handler.py:280
-msgid "invite_editor:popup:not_found"
-msgstr "❌ Invite link not found"
-
-#: app/bot/routers/admin_tools/invites_handler.py:150
-#: app/bot/routers/admin_tools/invites_handler.py:223
-msgid "invite_editor:status:active"
-msgstr "🟢"
-
-#: app/bot/routers/admin_tools/invites_handler.py:150
-#: app/bot/routers/admin_tools/invites_handler.py:223
-msgid "invite_editor:status:inactive"
-msgstr "🔴"
-
-#: app/bot/routers/admin_tools/invites_handler.py:167
-msgid "invite_editor:popup:failed_get_stats"
-msgstr "❌ Failed get stats"
-
-#: app/bot/routers/admin_tools/invites_handler.py:178
-msgid "invite_editor:revenue:none"
-msgstr "no data"
-
-#: app/bot/routers/admin_tools/invites_handler.py:181
-msgid "invite_editor:message:details"
-msgstr ""
-"📊 <b>Invite Link Details</b>\n"
-"\n"
-"<b>Name:</b> {name}\n"
-"<b>Link:</b> <code>{link}</code>\n"
-"<b>Clicks:</b> {clicks}\n"
-"<b>Created:</b> {created_at}\n"
-"<b>Status:</b> {status}\n"
-"\n"
-"<b>💵 Revenue:</b>\n"
-"{revenue_text}\n"
-"\n"
-"<b>👥 User Statistics:</b>\n"
-"• <b>Total users:</b> {users_count}\n"
-"• <b>Used trial:</b> {trial_users_count}\n"
-"• <b>Made payment:</b> {paid_users_count}\n"
-"• <b>Repeat customers:</b> {repeat_customers_count}"
-
-#: app/bot/routers/admin_tools/invites_handler.py:228
-msgid "invite_editor:popup:status_changed"
-msgstr "Invite link status changed: {status}"
-
-#: app/bot/routers/admin_tools/invites_handler.py:262
-msgid "invite_editor:message:confirm_delete"
-msgstr "Are you sure you want to delete Invite Link <b>{name}</b>?"
-
-#: app/bot/routers/admin_tools/invites_handler.py:293
-msgid "invite_editor:popup:deleted"
-msgstr "✅ Invite link \"{name}\" deleted"
-
-#: app/bot/routers/admin_tools/keyboard.py:21
+#: app/bot/routers/admin_tools/keyboard.py:20
 msgid "admin_tools:button:server_management"
 msgstr "🌐 Server management"
 
-#: app/bot/routers/admin_tools/keyboard.py:28
+#: app/bot/routers/admin_tools/keyboard.py:27
 msgid "admin_tools:button:statistics"
 msgstr "📈 Statistics"
 
-#: app/bot/routers/admin_tools/keyboard.py:34
+#: app/bot/routers/admin_tools/keyboard.py:33
 msgid "admin_tools:button:user_editor"
 msgstr "👤 User editor"
 
-#: app/bot/routers/admin_tools/keyboard.py:40
-msgid "admin_tools:button:invite_editor"
-msgstr "🔗 Invite Links"
-
-#: app/bot/routers/admin_tools/keyboard.py:46
+#: app/bot/routers/admin_tools/keyboard.py:39
 msgid "admin_tools:button:promocode_editor"
 msgstr "🎟 Promocode editor"
 
-#: app/bot/routers/admin_tools/keyboard.py:52
+#: app/bot/routers/admin_tools/keyboard.py:45
 msgid "admin_tools:button:notification"
 msgstr "📣 Send notification"
 
-#: app/bot/routers/admin_tools/keyboard.py:58
+#: app/bot/routers/admin_tools/keyboard.py:51
 msgid "admin_tools:button:create_backup"
 msgstr "💾 Create backup"
 
-#: app/bot/routers/admin_tools/keyboard.py:64
+#: app/bot/routers/admin_tools/keyboard.py:57
 msgid "admin_tools:button:maintenance_mode"
 msgstr "🚧 Maintenance mode"
 
-#: app/bot/routers/admin_tools/keyboard.py:70
+#: app/bot/routers/admin_tools/keyboard.py:63
 msgid "admin_tools:button:restart_bot"
 msgstr "🔄 Restart bot"
 
-#: app/bot/routers/admin_tools/keyboard.py:76
+#: app/bot/routers/admin_tools/keyboard.py:69
 msgid "admin_tools:button:test_button"
 msgstr "🔍 Test button"
 
-#: app/bot/routers/admin_tools/keyboard.py:90
+#: app/bot/routers/admin_tools/keyboard.py:83
 msgid "promocode_editor:button:create"
 msgstr "🆕 Create"
 
-#: app/bot/routers/admin_tools/keyboard.py:96
+#: app/bot/routers/admin_tools/keyboard.py:89
 msgid "promocode_editor:button:delete"
 msgstr "🗑 Delete"
 
-#: app/bot/routers/admin_tools/keyboard.py:102
+#: app/bot/routers/admin_tools/keyboard.py:95
 msgid "promocode_editor:button:edit"
 msgstr "✏️ Edit"
 
-#: app/bot/routers/admin_tools/keyboard.py:118 app/bot/utils/formatting.py:73
+#: app/bot/routers/admin_tools/keyboard.py:111 app/bot/utils/formatting.py:73
 #, python-brace-format
 msgid "1 day"
 msgid_plural "{} days"
 msgstr[0] ""
 msgstr[1] ""
 
-#: app/bot/routers/admin_tools/keyboard.py:137
+#: app/bot/routers/admin_tools/keyboard.py:130
 msgid "maintenance_mode:button:disable"
 msgstr "🔴 Disable"
 
-#: app/bot/routers/admin_tools/keyboard.py:144
+#: app/bot/routers/admin_tools/keyboard.py:137
 msgid "maintenance_mode:button:enable"
 msgstr "🟢 Enable"
 
-#: app/bot/routers/admin_tools/keyboard.py:160
+#: app/bot/routers/admin_tools/keyboard.py:153
 msgid "server_management:button:sync"
 msgstr "🔄 Sync"
 
-#: app/bot/routers/admin_tools/keyboard.py:167
+#: app/bot/routers/admin_tools/keyboard.py:160
 msgid "server_management:button:add"
 msgstr "🆕 Add"
 
-#: app/bot/routers/admin_tools/keyboard.py:192
+#: app/bot/routers/admin_tools/keyboard.py:185
 msgid "server_management:button:ping"
 msgstr "📶 Ping"
 
-#: app/bot/routers/admin_tools/keyboard.py:198
+#: app/bot/routers/admin_tools/keyboard.py:191
 msgid "server_management:button:delete"
 msgstr "🗑 Delete"
 
-#: app/bot/routers/admin_tools/keyboard.py:213
+#: app/bot/routers/admin_tools/keyboard.py:206
 msgid "server_management:button:confirm"
 msgstr "✅ Confirm"
 
-#: app/bot/routers/admin_tools/keyboard.py:228
+#: app/bot/routers/admin_tools/keyboard.py:221
 msgid "notification:button:send_to_user"
 msgstr "📩 Send to user"
 
-#: app/bot/routers/admin_tools/keyboard.py:232
+#: app/bot/routers/admin_tools/keyboard.py:225
 msgid "notification:button:send_to_all"
 msgstr "📣 Send to all"
 
-#: app/bot/routers/admin_tools/keyboard.py:239
+#: app/bot/routers/admin_tools/keyboard.py:232
 msgid "notification:button:last_notification"
 msgstr "💬 Last notification"
 
-#: app/bot/routers/admin_tools/keyboard.py:254
+#: app/bot/routers/admin_tools/keyboard.py:247
 msgid "notification:button:edit"
 msgstr "✏️ Edit"
 
-#: app/bot/routers/admin_tools/keyboard.py:261
+#: app/bot/routers/admin_tools/keyboard.py:254
 msgid "notification:button:delete"
 msgstr "🗑 Delete"
 
-#: app/bot/routers/admin_tools/keyboard.py:275
+#: app/bot/routers/admin_tools/keyboard.py:268
 msgid "notification:button:confirm"
 msgstr "✅ Confirm and send"
-
-#: app/bot/routers/admin_tools/keyboard.py:288
-msgid "invite_editor:button:create_invite"
-msgstr "➕ Create New Invite Link"
-
-#: app/bot/routers/admin_tools/keyboard.py:295
-msgid "invite_editor:button:list_invites"
-msgstr "📋 List Invite Links"
-
-#: app/bot/routers/admin_tools/keyboard.py:326
-msgid "invite_editor:button:previous_page"
-msgstr "◀️ Previous page"
-
-#: app/bot/routers/admin_tools/keyboard.py:334
-msgid "invite_editor:button:next_page"
-msgstr "▶️ Next page"
-
-#: app/bot/routers/admin_tools/keyboard.py:353
-msgid "invite_editor:button:disable"
-msgstr "🔴 Disable"
-
-#: app/bot/routers/admin_tools/keyboard.py:360
-msgid "invite_editor:button:enable"
-msgstr "🟢 Enable"
-
-#: app/bot/routers/admin_tools/keyboard.py:367
-msgid "invite_editor:button:delete"
-msgstr "🗑️ Delete"
-
-#: app/bot/routers/admin_tools/keyboard.py:382
-msgid "invite_editor:button:confirm_delete"
-msgstr "✅ Confirm deletion"
 
 #: app/bot/routers/admin_tools/maintenance_handler.py:24
 #: app/bot/routers/admin_tools/maintenance_handler.py:45
@@ -712,9 +579,9 @@ msgstr "📥 Download"
 msgid "download:button:connect"
 msgstr "🔌 Connect"
 
-#: app/bot/routers/main_menu/handler.py:103
-#: app/bot/routers/main_menu/handler.py:127
-#: app/bot/routers/main_menu/handler.py:158
+#: app/bot/routers/main_menu/handler.py:81
+#: app/bot/routers/main_menu/handler.py:105
+#: app/bot/routers/main_menu/handler.py:136
 msgid "main_menu:message:main"
 msgstr ""
 "Welcome, {name}! 🎉\n"
@@ -758,6 +625,22 @@ msgstr "🆘 Support"
 msgid "main_menu:button:admin_tools"
 msgstr "🛠 Admin tools"
 
+#: app/bot/routers/main_menu/keyboard.py:70
+msgid "main_menu:button:channel"
+msgstr "📢 Our Channel"
+
+#: app/bot/routers/main_menu/keyboard.py:74
+msgid "main_menu:button:discord"
+msgstr "💬 Discord"
+
+#: app/bot/routers/main_menu/keyboard.py:78
+msgid "main_menu:button:terms"
+msgstr "📜 Terms of Service"
+
+#: app/bot/routers/main_menu/keyboard.py:82
+msgid "main_menu:button:disable_ads"
+msgstr "<b>How to disable ads on your device:</b>\n\n🔧 <b>General ad blocking methods:</b>\n• Detailed guide on blocking ads without third-party apps: https://pikabu.ru/story/kak_otklyuchit_vsyu_reklamu_na_smartfone_bez_storonnikh_programm_9583478 (in Russian)\n\n📱 <b>Ad-free YouTube:</b>\n\n<b>Android:</b>\n• ReVanced - modified YouTube client\n• Download: https://revanced.io\n\n<b>iPhone:</b>\n• uYou+ - modified YouTube client\n• Repository: https://github.com/qnblackcat/uYouPlus\n• Requires AltStore for installation: https://altstore.io\n\n⚠️ <i>Note: Use modified applications at your own risk. We are not responsible for any consequences.</i>"
+
 #: app/bot/routers/misc/keyboard.py:10
 msgid "misc:button:close_notification"
 msgstr "🔕 Close"
@@ -790,21 +673,15 @@ msgstr ""
 
 #: app/bot/routers/profile/handler.py:28
 msgid "profile:message:subscription"
-msgstr ""
-"📅 <b>Subscription:</b>\n"
-"Devices: {devices}\n"
+msgstr "🗓️ Subscription: {devices} devices\nStatus: {status}"
 
 #: app/bot/routers/profile/handler.py:31
-msgid "profile:message:subscription_expiry_time"
-msgstr ""
-"Expires in: {expiry_time}\n"
-"\n"
+msgid "profile:message:subscription_with_location"
+msgstr "🗓️ Subscription: {devices} devices\nLocation: {location}\nStatus: {status}"
 
 #: app/bot/routers/profile/handler.py:33
 msgid "profile:message:subscription_expired"
-msgstr ""
-"⚠️ <i>Subscription period has expired.</i>\n"
-"\n"
+msgstr "⚠️ <i>Subscription period has expired.</i>\n"
 
 #: app/bot/routers/profile/handler.py:36
 msgid "profile:message:statistics"
@@ -821,32 +698,23 @@ msgstr "❌ Error fetching data. Please try again later."
 
 #: app/bot/routers/profile/handler.py:84
 msgid "profile:message:key"
+msgstr "🔑 Your connection key (will be deleted in {seconds_text}):\n\n<code>{key}</code>\n\nScan the QR code or copy the key to import it into your app."
+
+#: app/bot/routers/profile/handler.py:160
+msgid "profile:message:key_vless"
 msgstr ""
-"🔑 <b>Your key:</b> <i>(Closes after {seconds_text})</i>\n"
-"<pre>{key}</pre>"
+"🔑 <b>Your Connection Key</b>\n"
+"\n"
+"Instructions:\n"
+"1. <b>Copy the key:</b> Click on the key below to copy it.\n"
+"2. <b>Import in your app:</b> Paste the key into your VPN application (e.g., V2Box, Streisand).\n"
+"3. <b>Or scan the QR code.</b>\n"
+"\n"
+"<code>{key}</code>"
 
-#: app/bot/routers/profile/handler.py:85
-msgid "10 seconds"
-msgstr ""
-
-#: app/bot/routers/profile/handler.py:88
-#, python-brace-format
-msgid "1 second"
-msgid_plural "{} seconds"
-msgstr[0] ""
-msgstr[1] ""
-
-#: app/bot/routers/profile/keyboard.py:14
-msgid "profile:button:buy_subscription"
-msgstr "💳 Buy subscription"
-
-#: app/bot/routers/profile/keyboard.py:28
+#: app/bot/routers/profile/keyboard.py:16
 msgid "profile:button:show_key"
 msgstr "🔑 Show key"
-
-#: app/bot/routers/profile/keyboard.py:34
-msgid "profile:button:connect"
-msgstr "🔌 Connect"
 
 #: app/bot/routers/referral/handler.py:35
 msgid "referral:message:user_summary"
@@ -1042,11 +910,7 @@ msgstr ""
 
 #: app/bot/routers/subscription/subscription_handler.py:36
 msgid "subscription:message:active"
-msgstr ""
-"✅ <b>You already have an active subscription:</b>\n"
-"\n"
-"Devices: {devices}\n"
-"Expires on: {expiry_time}"
+msgstr "You have an active subscription:\nDevices: {devices}\nExpires in: {expiry_time}"
 
 #: app/bot/routers/subscription/subscription_handler.py:41
 msgid "subscription:message:not_active"
@@ -1086,6 +950,26 @@ msgstr "❌ Trial is not available for you now."
 #: app/bot/routers/subscription/trial_handler.py:61
 msgid "subscription:popup:trial_activate_failed"
 msgstr "❌ Failed to activate trial period. Please, try later."
+
+#: app/bot/routers/subscription/trial_handler.py:61
+msgid "subscription:popup:cannot_change_no_active_sub"
+msgstr "❌ You do not have an active subscription to change, or current device count is undefined. Please purchase a subscription."
+
+#: app/bot/routers/subscription/trial_handler.py:61
+msgid "subscription:popup:cannot_extend_no_active_sub"
+msgstr "❌ You do not have an active subscription to extend. Please purchase a subscription first."
+
+#: app/bot/routers/subscription/trial_handler.py:61
+msgid "subscription:popup:no_active_sub_for_location_change"
+msgstr "❌ You do not have an active subscription to change location."
+
+#: app/bot/routers/subscription/trial_handler.py:61
+msgid "subscription:popup:location_changed_successfully"
+msgstr "✅ Location successfully changed to {location}."
+
+#: app/bot/routers/subscription/trial_handler.py:61
+msgid "subscription:popup:error_changing_location"
+msgstr "❌ An error occurred while changing location. Please try again later."
 
 #: app/bot/routers/support/handler.py:21
 msgid "support:message:main"
@@ -1143,11 +1027,9 @@ msgid "payment:message:purchase_success"
 msgstr ""
 "✅ <b>Payment successful!</b>\n"
 "\n"
-"🔑 <b>Your key:</b> <pre>{key}</pre>\n"
-"<i>The key will be saved in your profile.</i>\n"
+"To start using our service, scan the QR code or copy the key below and import it into your application.\n"
 "\n"
-"To start using our service, click the `🔌 Connect` button and follow the "
-"instructions."
+"Your key: <code>{key}</code>"
 
 #: app/bot/services/notification.py:184
 msgid "payment:message:extend_success"
@@ -1229,3 +1111,152 @@ msgid_plural "{} months"
 msgstr[0] ""
 msgstr[1] ""
 
+#: app/bot/routers/subscription/subscription_handler.py:138
+msgid "subscription:message:location"
+msgstr "🌍 <b>Select server location:</b>"
+
+#: app/bot/routers/subscription/subscription_handler.py:138
+msgid "subscription:popup:no_available_servers_location"
+msgstr "❌ No available servers found in selected location. Please try another location."
+
+msgid "server_management:message:location"
+msgstr "- location: {server_location}\n"
+
+msgid "server_management:message:enter_location"
+msgstr "<i>Enter the server location (example: Netherlands.)</i>"
+
+msgid "subscription:button:change_location"
+msgstr "◀️ Change Location"
+
+msgid "subscription:button:change_devices_specific"
+msgstr "◀️ Change Number of Devices"
+
+msgid "subscription:message:active_with_location"
+msgstr "You have an active subscription:\nDevices: {devices}\nLocation: {location}\nExpires in: {expiry_time}"
+
+msgid "profile:message:subscription_expiry_time"
+msgstr "\nTime left: {expiry_time}\n\n"
+
+msgid "subscription:button:change_location_only"
+msgstr "◀️ Change Location"
+
+msgid "subscription:button:back_to_devices"
+msgstr "◀️ To device selection"
+
+msgid "subscription:message:promocode_accepted_placeholder"
+msgstr "Promocode {promocode} accepted! (Logic not yet implemented)"
+
+msgid "user_editor:button:disable_subscription"
+msgstr "🔴 Disable Subscription"
+
+msgid "user_editor:button:enable_subscription"
+msgstr "🟢 Enable Subscription"
+
+msgid "user_editor:success:subscription_status_changed"
+msgstr "Subscription for user {user_id} has been {status}."
+
+msgid "user_editor:error:subscription_status_change_failed"
+msgstr "Failed to change subscription status for user {user_id}."
+
+msgid "user_editor:error:no_sub_for_loc_change"
+msgstr "This user does not have an active subscription to change location for."
+
+msgid "user_editor:error:current_server_not_found"
+msgstr "Could not find the user's current server in the database."
+
+# Create User Flow
+msgid "user_editor:button:create_user"
+msgstr "🆕 Create User"
+msgid "user_editor:prompt:enter_new_user_id"
+msgstr "Please enter the Telegram ID of the user to create:"
+msgid "user_editor:error:username_not_supported"
+msgstr "Sorry, creating users via @username is not supported yet. Please use the Telegram ID."
+msgid "user_editor:error:user_already_exists_with_sub"
+msgstr "User {user_id} already exists and has an active subscription. You can edit it instead."
+msgid "user_editor:error:no_locations_for_creation"
+msgstr "There are no online servers available to create a new user. Please add a server first."
+msgid "user_editor:prompt:select_location_for_new_user"
+msgstr "Select a server location for the new user:"
+msgid "user_editor:prompt:enter_devices_for_new_user"
+msgstr "Enter the number of devices for the new user"
+msgid "user_editor:prompt:enter_duration_for_new_user"
+msgstr "Enter the subscription duration in days (0 for permanent):"
+msgid "user_editor:prompt:confirm_creation_details"
+msgstr ""
+"Please confirm new user creation:\n"
+"Telegram ID: {user_id}\n"
+"Location: {location}\n"
+"Devices: {devices_str}\n"
+"Duration: {duration_str}"
+msgid "user_editor:button:confirm_creation"
+msgstr "✅ Yes, create"
+msgid "user_editor:button:cancel_creation"
+msgstr "❌ Cancel"
+msgid "user_editor:error:state_lost_data_for_creation"
+msgstr "Error: State was lost during creation process. Please start over."
+msgid "user_editor:info:processing_creation"
+msgstr "Processing creation for user {user_id}..."
+msgid "user_editor:success:user_created"
+msgstr "✅ User {user_id} created successfully!\nServer ID: {server_id}\nVPN ID: {vpn_id}"
+msgid "user_editor:error:user_creation_failed"
+msgstr "❌ Failed to create user {user_id} and their subscription. Check the logs."
+msgid "{n} days"
+msgstr "{n} days"
+
+msgid "user_editor:success:device_count_updated"
+msgstr "Device count for user {user_id} successfully changed to {count}."
+
+msgid "user_editor:success:duration_set_unlimited"
+msgstr "Subscription for user {user_id} has been set to unlimited."
+
+msgid "user_editor:success:duration_updated"
+msgstr "Subscription for user {user_id} successfully extended by {days} days."
+
+
+msgid "subscription:message:enter_promocode"
+msgstr "Please enter your promocode:"
+
+msgid "promocode:ntf:no_active_sub_for_promo"
+msgstr "❌ You must have an active subscription to activate a promocode."
+
+msgid "user_editor:error:duration_update_failed"
+msgstr "Failed to update duration for user {user_id}."
+
+
+msgid "status:location_not_set"
+msgstr "not set"
+
+msgid "payment:message:purchase_success_no_key"
+msgstr ""
+"✅ <b>Payment successful!</b>\n"
+"\n"
+"We could not generate your personal key. Please go to your profile and press 'Show key' or contact support."
+
+#: app/bot/services/notification.py:91
+msgid "payment:ntf:subscription_success"
+msgstr "✅ <b>Payment successful!</b>\n\nYour subscription for <code>{devices}</code> for <code>{duration}</code> is now active.\n\nUse the key below to connect:"
+
+#: app/bot/services/notification.py:112
+msgid "payment:ntf:subscription_success_key"
+msgstr ""
+"🔑 <b>Your Connection Key</b>\n"
+"\n"
+"Instructions:\n"
+"1. <b>Copy the key:</b> Click on the key below to copy it.\n"
+"2. <b>Import in your app:</b> Paste the key into your VPN application (e.g., Hiddify, v2RayTun).\n"
+"3. <b>Or scan the QR code.</b>\n"
+"\n"
+"<code>{key}</code>"
+
+#: app/bot/services/notification.py:133
+msgid "payment:ntf:promocode_success"
+msgstr "✅ Promocode <b>{promocode}</b> activated successfully!"
+
+msgid "notification:purchase:new"
+msgstr "✅ Subscription successfully created for {days} days!"
+
+msgid "notification:purchase:extended"
+msgstr "✅ Subscription successfully extended for {days} days!"
+
+msgid "notification:purchase:changed"
+msgstr "✅ Subscription successfully changed. New period: {days} days!"

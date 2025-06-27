@@ -14,6 +14,7 @@ from . import (
     support,
 )
 
+from .admin_tools import user_editor_handlers
 
 def include(app: Application, dispatcher: Dispatcher) -> None:
     app.router.add_get(CONNECTION_WEBHOOK, download.handler.redirect_to_connection)
@@ -31,12 +32,11 @@ def include(app: Application, dispatcher: Dispatcher) -> None:
         subscription.trial_handler.router,
         admin_tools.admin_tools_handler.router,
         admin_tools.backup_handler.router,
-        admin_tools.invites_handler.router,
         admin_tools.maintenance_handler.router,
         admin_tools.notification_handler.router,
         admin_tools.promocode_handler.router,
         admin_tools.restart_handler.router,
         admin_tools.server_handler.router,
         admin_tools.statistics_handler.router,
-        admin_tools.user_handler.router,
+        user_editor_handlers.router,
     )

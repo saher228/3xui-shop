@@ -46,11 +46,32 @@ async def callback_payment_method_selected(
         devices = callback_data.devices
         duration = callback_data.duration
         logger.info(f"User {user.tg_id} selected payment method: {method}")
-        logger.info(f"User {user.tg_id} selected {devices} devices and {duration} days.")
+        logger.info(f"User {user.tg_id} selected {devices} devices and {duration} days. CB price: {callback_data.price}, is_change: {callback_data.is_change}")
         gateway = gateway_factory.get_gateway(method)
-        plan = services.plan.get_plan(devices)
-        price = plan.get_price(currency=gateway.currency, duration=duration)
-        callback_data.price = price
+        
+        final_price_for_payment: float
+        if callback_data.is_change and callback_data.price is not None and callback_data.price > 0:
+            final_price_for_payment = callback_data.price
+            logger.info(f"User {user.tg_id} [Change Flow]: Using pre-calculated (prorated) price from callback_data: {final_price_for_payment:.2f}")
+        else:
+            plan = services.plan.get_plan(devices)
+            if not plan:
+                logger.error(f"User {user.tg_id}: Plan not found for {devices} devices when creating payment link.")
+                await services.notification.show_popup(callback=callback, text=_("payment:popup:error"))
+                await state.set_state(None)
+                return
+            standard_price = plan.get_price(currency=gateway.currency, duration=duration)
+            if standard_price is None:
+                logger.error(f"User {user.tg_id}: Could not get price for plan {devices}d/{duration}days, currency {gateway.currency.code}")
+                await services.notification.show_popup(callback=callback, text=_("payment:popup:error"))
+                await state.set_state(None)
+                return
+            final_price_for_payment = standard_price
+            callback_data.price = final_price_for_payment 
+            logger.info(f"User {user.tg_id} [Non-Change or 0 Prorated]: Using standard price: {final_price_for_payment:.2f}")
+
+        if final_price_for_payment <= 0 and not (gateway.name == "Telegram Stars" and final_price_for_payment == 0):
+             logger.warning(f"User {user.tg_id}: Final price for payment is {final_price_for_payment}. No payment link will be generated if not Telegram Stars.")
 
         pay_url = await gateway.create_payment(callback_data)
 
@@ -61,15 +82,16 @@ async def callback_payment_method_selected(
         else:
             text = _("payment:message:order")
 
-        await callback.message.edit_text(
+        message = await callback.message.edit_text(
             text=text.format(
                 devices=devices,
                 duration=format_subscription_period(duration),
-                price=price,
+                price=final_price_for_payment,
                 currency=gateway.currency.symbol,
             ),
             reply_markup=pay_keyboard(pay_url=pay_url, callback_data=callback_data),
         )
+        await state.update_data(payment_message_id=message.message_id)
     except Exception as exception:
         logger.error(f"Error processing payment: {exception}")
         await services.notification.show_popup(callback=callback, text=_("payment:popup:error"))

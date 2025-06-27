@@ -21,6 +21,7 @@ DEFAULT_PLANS_DIR = DEFAULT_DATA_DIR / "plans.json"
 
 DEFAULT_BOT_HOST = "0.0.0.0"
 DEFAULT_BOT_PORT = 8080
+DEFAULT_DELETE_KEY_DELAY = 60
 
 DEFAULT_SHOP_EMAIL = "support@3xui-shop.com"
 DEFAULT_SHOP_CURRENCY = Currency.RUB.code
@@ -170,6 +171,20 @@ class Config:
     database: DatabaseConfig
     redis: RedisConfig
     logging: LoggingConfig
+    DELETE_KEY_DELAY: int
+
+    def __init__(self, bot, shop, xui, cryptomus, heleket, yookassa, yoomoney, database, redis, logging, DELETE_KEY_DELAY) -> None:
+        self.bot = bot
+        self.shop = shop
+        self.xui = xui
+        self.cryptomus = cryptomus
+        self.heleket = heleket
+        self.yookassa = yookassa
+        self.yoomoney = yoomoney
+        self.database = database
+        self.redis = redis
+        self.logging = logging
+        self.DELETE_KEY_DELAY = DELETE_KEY_DELAY
 
 
 def load_config() -> Config:
@@ -267,6 +282,8 @@ def load_config() -> Config:
             "Only 'days' option is now available for SHOP_REFERRER_REWARD_TYPE. Referrer reward disabled."
         )
         referrer_reward_enabled = False
+
+    delete_key_delay = env.int("DELETE_KEY_DELAY", default=DEFAULT_DELETE_KEY_DELAY)
 
     return Config(
         bot=BotConfig(
@@ -389,4 +406,5 @@ def load_config() -> Config:
                 ),
             ),
         ),
+        DELETE_KEY_DELAY=delete_key_delay,
     )

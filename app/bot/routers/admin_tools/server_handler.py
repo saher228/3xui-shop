@@ -32,6 +32,7 @@ class AddServerStates(StatesGroup):
     name = State()
     host = State()
     max_clients = State()
+    location = State()
     confirmation = State()
 
 
@@ -92,6 +93,9 @@ async def show_add_server(message: Message, state: FSMContext) -> None:
     max_clients = _("server_management:message:max_clients").format(
         server_max_clients=data.get(SERVER_MAX_CLIENTS_KEY)
     )
+    location = _("server_management:message:location").format(
+        server_location=data.get("server_location", "")
+    )
     reply_markup = back_keyboard(NavAdminTools.ADD_SERVER_BACK)
 
     match current_state:
@@ -104,8 +108,11 @@ async def show_add_server(message: Message, state: FSMContext) -> None:
         case AddServerStates.max_clients:
             text += name + host + "\n"
             text += _("server_management:message:enter_max_clients")
-        case AddServerStates.confirmation:
+        case AddServerStates.location:
             text += name + host + max_clients + "\n"
+            text += _("server_management:message:enter_location")
+        case AddServerStates.confirmation:
+            text += name + host + max_clients + location + "\n"
             text += _("server_management:message:confirm")
             reply_markup = confirm_add_server_keyboard()
 
@@ -126,8 +133,10 @@ async def callback_add_server_back(callback: CallbackQuery, state: FSMContext) -
             await state.set_state(AddServerStates.name)
         case AddServerStates.max_clients:
             await state.set_state(AddServerStates.host)
-        case AddServerStates.confirmation:
+        case AddServerStates.location:
             await state.set_state(AddServerStates.max_clients)
+        case AddServerStates.confirmation:
+            await state.set_state(AddServerStates.location)
 
     await show_add_server(message=callback.message, state=state)
 
@@ -196,7 +205,7 @@ async def message_max_clients(
     logger.info(f"Dev {user.tg_id} entered server max clients: {server_max_clients}")
 
     if is_valid_client_count(server_max_clients):
-        await state.set_state(AddServerStates.confirmation)
+        await state.set_state(AddServerStates.location)
         await state.update_data({SERVER_MAX_CLIENTS_KEY: server_max_clients})
         await show_add_server(message=message, state=state)
     else:
@@ -205,6 +214,20 @@ async def message_max_clients(
             text=_("server_management:ntf:invalid_max_clients"),
             duration=5,
         )
+
+
+@router.message(AddServerStates.location, IsDev())
+async def message_location(
+    message: Message,
+    user: User,
+    state: FSMContext,
+) -> None:
+    server_location = message.text.strip()
+    logger.info(f"Dev {user.tg_id} entered server location: {server_location}")
+    
+    await state.set_state(AddServerStates.confirmation)
+    await state.update_data({"server_location": server_location})
+    await show_add_server(message=message, state=state)
 
 
 @router.callback_query(AddServerStates.confirmation, IsDev())
@@ -218,15 +241,12 @@ async def callback_confirmation(
     logger.info(f"Dev {user.tg_id} confirmed adding server.")
     data = await state.get_data()
 
-    # ping = await ping_url(data.get(SERVER_HOST_KEY))
-    # online = True if ping else False
-
     server = await Server.create(
         session=session,
         name=data.get(SERVER_NAME_KEY),
         host=data.get(SERVER_HOST_KEY),
         max_clients=data.get(SERVER_MAX_CLIENTS_KEY),
-        # online=online,
+        location=data.get("server_location"),
     )
 
     if server:
@@ -237,7 +257,6 @@ async def callback_confirmation(
             callback=callback,
             text=_("server_management:popup:added_success"),
         )
-
     else:
         await services.notification.show_popup(
             callback=callback,
@@ -287,9 +306,6 @@ async def callback_ping_server(
     logger.info(f"Dev {user.tg_id} pinging server {server_name}.")
     server = await Server.get_by_name(session=session, name=server_name)
     ping = await ping_url(server.host)
-    # online = True if ping else False
-    # if online != server.online:
-    #    await Server.update(session=session, name=server.name, online=online)
     if ping:
         await services.notification.show_popup(
             callback=callback,

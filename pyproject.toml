@@ -19,6 +19,8 @@ aiosqlite = "^0.20.0"
 alembic = "^1.14.0"
 redis = "^5.2.1"
 apscheduler = "^3.11.0"
+qrcode = "^7.4.2"
+pillow = "^11.2.0"
 
 [build-system]
 requires = ["poetry-core"]

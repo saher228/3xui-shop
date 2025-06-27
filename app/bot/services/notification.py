@@ -1,5 +1,7 @@
 import asyncio
 import logging
+import qrcode
+import io
 
 from aiogram import Bot
 from aiogram.types import (
@@ -10,6 +12,7 @@ from aiogram.types import (
     Message,
     ReplyKeyboardMarkup,
     ReplyKeyboardRemove,
+    BufferedInputFile,
 )
 from aiogram.utils.i18n import gettext as _
 from aiogram.utils.i18n import lazy_gettext as __
@@ -19,6 +22,7 @@ from app.bot.routers.misc.keyboard import close_notification_keyboard
 from app.bot.routers.subscription.keyboard import payment_success_keyboard
 from app.bot.utils.constants import MESSAGE_EFFECT_IDS
 from app.bot.utils.formatting import format_device_count, format_subscription_period
+from app.bot.utils.qrcode import generate_qr_code
 from app.config import Config
 
 logger = logging.getLogger(__name__)
@@ -164,14 +168,38 @@ class NotificationService:
         self,
         user_id: int,
         key: str,
-        message_effect_id: str = MESSAGE_EFFECT_IDS["🎉"],
+        duration: int,
+        devices: int,
+        is_change: bool = False,
+        is_extend: bool = False,
     ) -> None:
-        await self.notify_by_id(
+        """Notify user about successful purchase and send VPN key."""
+        if is_extend:
+            text = _("notification:purchase:extended").format(days=duration)
+        elif is_change:
+            text = _("notification:purchase:changed").format(days=duration)
+        else:
+            text = _("notification:purchase:new").format(days=duration)
+
+        # Generate QR code
+        qr_image_bytes = generate_qr_code(key)
+        qr_code_file = BufferedInputFile(qr_image_bytes.read(), filename="qr_code.png")
+        
+        # Send photo with caption
+        message = await self.bot.send_photo(
             chat_id=user_id,
-            text=__("payment:message:purchase_success").format(key=key),
-            message_effect_id=message_effect_id,
-            reply_markup=payment_success_keyboard(),
+            photo=qr_code_file,
+            caption=f"{text}\n\n`{key}`",
+            parse_mode="Markdown"
         )
+
+        # Delete message after delay
+        if self.config.DELETE_KEY_DELAY > 0:
+            await asyncio.sleep(self.config.DELETE_KEY_DELAY)
+            try:
+                await message.delete()
+            except Exception as e:
+                logger.warning(f"Could not delete key message for user {user_id}: {e}")
 
     async def notify_extend_success(
         self,

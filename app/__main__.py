@@ -109,6 +109,7 @@ async def main() -> None:
         config=config,
         bot=bot,
         services=services_container,
+        vpn=services_container.vpn,
         gateway_factory=gateway_factory,
     )
 

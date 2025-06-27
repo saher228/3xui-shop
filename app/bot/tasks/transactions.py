@@ -31,10 +31,14 @@ async def cancel_expired_transactions(
             )
 
             for transaction in expired_transactions:
-                transaction.status = TransactionStatus.CANCELED
+                current_transaction = await Transaction.get_by_id(session, transaction.payment_id)
+                if current_transaction and current_transaction.status == TransactionStatus.PENDING:
+                    transaction.status = TransactionStatus.CANCELED
+                else:
+                    logger.info(f"Transaction {transaction.payment_id} status changed while processing, skipping.")
+            
             await session.commit()
-
-            logger.info("[Background check] Successfully canceled expired transactions.")
+            logger.info(f"[Background check] Successfully canceled expired transactions.")
         else:
             logger.info("[Background check] No expired transactions found.")
 

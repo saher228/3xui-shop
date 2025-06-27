@@ -320,6 +320,10 @@
  >  По пути /3xui-shop/app/bot/routers/main_menu/keyboard.py Можете сменить Url ссылки на свои в главном меню, перевод кнопок в /locales
 
 
+  >  Изменить название профилей Заголовок или убрать "По этому пути /3xui-shop/app/bot/services/vpn.py Строка 178"
+                    ``remarks = f"INZEWORLD VPN-{user.tg_id}"``
+
+
 
 
 

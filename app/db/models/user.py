@@ -1,8 +1,8 @@
 import logging
 from datetime import datetime
-from typing import Any, Optional, Self
+from typing import Any, Self, Optional
 
-from sqlalchemy import ForeignKey, String, func, select, update
+from sqlalchemy import ForeignKey, String, func, select, update, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship, selectinload
@@ -21,7 +21,7 @@ class User(Base):
     Attributes:
         id (int): Unique primary key for the user.
         tg_id (int): Unique Telegram user ID.
-        vpn_id (str): Unique VPN identifier for the user.
+        vpn_id (str | None): Unique VPN identifier for the user.
         server_id (int | None): Foreign key referencing the server.
         first_name (str): First name of the user.
         username (str | None): Telegram username of the user.
@@ -37,7 +37,7 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     tg_id: Mapped[int] = mapped_column(unique=True, nullable=False)
-    vpn_id: Mapped[str] = mapped_column(String(36), unique=True, nullable=False)
+    vpn_id: Mapped[str | None] = mapped_column(String(36), unique=True, nullable=True)
     server_id: Mapped[int | None] = mapped_column(
         ForeignKey("servers.id", ondelete="SET NULL"), nullable=True
     )
@@ -60,16 +60,21 @@ class User(Base):
         foreign_keys="Referral.referrer_tg_id",
         primaryjoin="User.tg_id == Referral.referrer_tg_id",
         back_populates="referrer",
-        cascade="all, delete-orphan",
+        cascade="all, delete-orphan"
     )
-    referral: Mapped["Referral | None"] = relationship(  # type: ignore
+    referral: Mapped["Referral | None"] = relationship( # type: ignore
         "Referral",
         foreign_keys="Referral.referred_tg_id",
         primaryjoin="User.tg_id == Referral.referred_tg_id",
         back_populates="referred",
-        uselist=False,
+        uselist=False
     )
-    source_invite_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+
+    @property
+    def display_name(self) -> str:
+        if self.username:
+            return f"@{self.username}"
+        return self.first_name
 
     def __repr__(self) -> str:
         return (
@@ -101,9 +106,40 @@ class User(Base):
         return None
 
     @classmethod
-    async def get_all(cls, session: AsyncSession) -> list[Self]:
-        query = await session.execute(select(User).options(selectinload(User.server)))
-        return query.scalars().all()
+    async def get_all(cls, session: AsyncSession, limit: Optional[int] = None, offset: Optional[int] = None) -> list[Self]:
+        query = select(User).options(selectinload(User.server))
+        if offset is not None:
+            query = query.offset(offset)
+        if limit is not None:
+            query = query.limit(limit)
+        
+        result = await session.execute(query)
+        return result.scalars().all()
+
+    @classmethod
+    async def search_users(cls, session: AsyncSession, query_text: str, limit: Optional[int] = 15, offset: Optional[int] = 0) -> list[Self]:
+        normalized_query = query_text.strip()
+        filters = []
+
+        if normalized_query.isdigit():
+            filters.append(User.tg_id == int(normalized_query))
+        elif normalized_query.startswith('@'):
+            filters.append(User.username.ilike(f"%{normalized_query[1:]}%"))
+        else:
+            filters.append(User.first_name.ilike(f"%{normalized_query}%"))
+
+        if not filters:
+            return []
+
+        query_stmt = select(User).where(or_(*filters)).options(selectinload(User.server))
+        
+        if offset is not None:
+            query_stmt = query_stmt.offset(offset)
+        if limit is not None:
+            query_stmt = query_stmt.limit(limit)
+            
+        result = await session.execute(query_stmt)
+        return result.scalars().all()
 
     @classmethod
     async def create(cls, session: AsyncSession, tg_id: int, **kwargs: Any) -> Self | None:
@@ -162,7 +198,19 @@ class User(Base):
             logger.warning(f"User {tg_id} not found to update trial status.")
             return False
 
-        await session.execute(update(User).where(User.tg_id == tg_id).values(is_trial_used=used))
+        await session.execute(
+            update(User).where(User.tg_id == tg_id).values(is_trial_used=used)
+        )
         await session.commit()
         logger.info(f"Trial status updated for user {tg_id}: {used}")
         return True
+
+    @classmethod
+    async def update_language_code(cls, session: AsyncSession, tg_id: int, language_code: str | None = None) -> None:
+        """Update user's language code."""
+        await session.execute(
+            update(cls)
+            .where(cls.tg_id == tg_id)
+            .values(language_code=language_code or "ru")
+        )
+        await session.commit()

@@ -25,9 +25,9 @@ class DBSessionMiddleware(BaseMiddleware):
     ) -> Any:
         session: AsyncSession
         async with self.session() as session:
-            tg_user: TelegramUser | None = event.event.from_user
+            tg_user: TelegramUser | None = data.get("event_from_user")
 
-            if tg_user is not None and not tg_user.is_bot:
+            if tg_user and not tg_user.is_bot:
                 user = await User.get(session=session, tg_id=tg_user.id)
                 is_new_user = False
 
@@ -39,14 +39,18 @@ class DBSessionMiddleware(BaseMiddleware):
                         vpn_id=str(uuid.uuid4()),
                         first_name=tg_user.first_name,
                         username=tg_user.username,
-                        language_code=tg_user.language_code,
+                        language_code=tg_user.language_code or "ru",
                     )
                     logger.info(f"New user {user.tg_id} created.")
+                elif user.language_code != "ru":
+                    await User.update_language_code(session, user.tg_id, "ru")
+                    user.language_code = "ru"
+                    logger.debug(f"Updated language code to 'ru' for user {user.tg_id}")
 
                 data["user"] = user
-                data["session"] = session
                 data["is_new_user"] = is_new_user
-            else:
-                logger.debug("No user found in event data.")
+            
+            data["session"] = session
+            data["session_maker"] = self.session
 
             return await handler(event, data)

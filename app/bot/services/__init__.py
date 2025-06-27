@@ -4,9 +4,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from app.bot.models import ServicesContainer
 from app.config import Config
 
-from .invite_stats import InviteStatsService
 from .notification import NotificationService
-from .payment_stats import PaymentStatsService
 from .plan import PlanService
 from .referral import ReferralService
 from .server_pool import ServerPoolService
@@ -25,8 +23,6 @@ async def initialize(
     notification = NotificationService(config=config, bot=bot)
     referral = ReferralService(config=config, session_factory=session, vpn_service=vpn)
     subscription = SubscriptionService(config=config, session_factory=session, vpn_service=vpn)
-    payment_stats = PaymentStatsService(session_factory=session)
-    invite_stats = InviteStatsService(session_factory=session, payment_stats_service=payment_stats)
 
     return ServicesContainer(
         server_pool=server_pool,
@@ -35,6 +31,4 @@ async def initialize(
         notification=notification,
         referral=referral,
         subscription=subscription,
-        payment_stats=payment_stats,
-        invite_stats=invite_stats,
     )

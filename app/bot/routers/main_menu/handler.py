@@ -1,4 +1,5 @@
 import logging
+import asyncio
 
 from aiogram import Bot, F, Router
 from aiogram.filters import Command, CommandObject
@@ -14,32 +15,12 @@ from app.bot.models import ServicesContainer
 from app.bot.utils.constants import MAIN_MESSAGE_ID_KEY
 from app.bot.utils.navigation import NavMain
 from app.config import Config
-from app.db.models import Invite, Referral, User
+from app.db.models import Referral, User
 
 from .keyboard import main_menu_keyboard
 
 logger = logging.getLogger(__name__)
 router = Router(name=__name__)
-
-
-async def process_invite_attribution(session: AsyncSession, user: User, invite_hash: str) -> bool:
-    logger.info(f"Checking invite {invite_hash} for user {user.tg_id}")
-    try:
-        invite = await Invite.get_by_hash(session=session, hash_code=invite_hash)
-        if not invite or not invite.is_active:
-            logger.info(f"Invalid or inactive invite hash: {invite_hash}")
-            return False
-
-        user.source_invite_name = invite.name
-        await session.commit()
-
-        await Invite.increment_clicks(session=session, invite_id=invite.id)
-
-        logger.info(f"User {user.tg_id} attributed to invite {invite.name}")
-        return True
-    except Exception as exception:
-        logger.critical(f"Invite attribution error for user {user.tg_id}: {exception}")
-        return False
 
 
 async def process_creating_referral(session: AsyncSession, user: User, referrer_id: int) -> bool:
@@ -78,6 +59,8 @@ async def command_main_menu(
     command: CommandObject,
     is_new_user: bool,
 ) -> None:
+    if not is_new_user:
+        user = await User.get(session, user.tg_id)
     logger.info(f"User {user.tg_id} opened main menu page.")
     previous_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
 
@@ -90,13 +73,11 @@ async def command_main_menu(
         finally:
             await state.clear()
 
-    if command.args and is_new_user:
-        if command.args.isdigit():
-            await process_creating_referral(
-                session=session, user=user, referrer_id=int(command.args)
-            )
-        else:
-            await process_invite_attribution(session=session, user=user, invite_hash=command.args)
+    received_referrer_id = int(command.args) if command.args and command.args.isdigit() else None
+    if received_referrer_id and is_new_user:
+        await process_creating_referral(
+            session=session, user=user, referrer_id=received_referrer_id
+        )
 
     is_admin = await IsAdmin()(user_id=user.tg_id)
     main_menu = await message.answer(
@@ -118,20 +99,47 @@ async def callback_main_menu(
     services: ServicesContainer,
     state: FSMContext,
     config: Config,
+    session: AsyncSession,
 ) -> None:
+    user = await User.get(session, user.tg_id)
     logger.info(f"User {user.tg_id} returned to main menu page.")
+    
+    state_data = await state.get_data()
+    force_refresh = state_data.get("force_refresh", False)
+    
+    if force_refresh:
+        await state.update_data({"force_refresh": False})
+        await asyncio.sleep(0.5)
+        user = await User.get(session, user.tg_id)
+        
     await state.clear()
     await state.update_data({MAIN_MESSAGE_ID_KEY: callback.message.message_id})
+    
     is_admin = await IsAdmin()(user_id=user.tg_id)
-    await callback.message.edit_text(
-        text=_("main_menu:message:main").format(name=user.first_name),
-        reply_markup=main_menu_keyboard(
-            is_admin,
-            is_referral_available=config.shop.REFERRER_REWARD_ENABLED,
-            is_trial_available=await services.subscription.is_trial_available(user),
-            is_referred_trial_available=await services.referral.is_referred_trial_available(user),
-        ),
-    )
+    is_trial_available = await services.subscription.is_trial_available(user)
+    is_referred_trial_available = await services.referral.is_referred_trial_available(user)
+    
+    try:
+        await callback.message.edit_text(
+            text=_("main_menu:message:main").format(name=user.first_name),
+            reply_markup=main_menu_keyboard(
+                is_admin,
+                is_referral_available=config.shop.REFERRER_REWARD_ENABLED,
+                is_trial_available=is_trial_available,
+                is_referred_trial_available=is_referred_trial_available,
+            ),
+        )
+    except Exception as e:
+        logger.error(f"Error updating main menu for user {user.tg_id}: {e}")
+        await callback.message.answer(
+            text=_("main_menu:message:main").format(name=user.first_name),
+            reply_markup=main_menu_keyboard(
+                is_admin,
+                is_referral_available=config.shop.REFERRER_REWARD_ENABLED,
+                is_trial_available=is_trial_available,
+                is_referred_trial_available=is_referred_trial_available,
+            ),
+        )
 
 
 async def redirect_to_main_menu(
@@ -141,6 +149,7 @@ async def redirect_to_main_menu(
     config: Config,
     storage: RedisStorage | None = None,
     state: FSMContext | None = None,
+    session: AsyncSession | None = None,
 ) -> None:
     logger.info(f"User {user.tg_id} redirected to main menu page.")
 
@@ -150,8 +159,14 @@ async def redirect_to_main_menu(
             key=StorageKey(bot_id=bot.id, chat_id=user.tg_id, user_id=user.tg_id),
         )
 
+    if session:
+        user = await User.get(session, user.tg_id)
+
     main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
     is_admin = await IsAdmin()(user_id=user.tg_id)
+    
+    is_trial_available = await services.subscription.is_trial_available(user)
+    is_referred_trial_available = await services.referral.is_referred_trial_available(user)
 
     try:
         await bot.edit_message_text(
@@ -161,11 +176,32 @@ async def redirect_to_main_menu(
             reply_markup=main_menu_keyboard(
                 is_admin,
                 is_referral_available=config.shop.REFERRER_REWARD_ENABLED,
-                is_trial_available=await services.subscription.is_trial_available(user),
-                is_referred_trial_available=await services.referral.is_referred_trial_available(
-                    user
-                ),
+                is_trial_available=is_trial_available,
+                is_referred_trial_available=is_referred_trial_available,
             ),
         )
     except Exception as exception:
         logger.error(f"Error redirecting to main menu page: {exception}")
+        try:
+            await bot.send_message(
+                chat_id=user.tg_id,
+                text=_("main_menu:message:main").format(name=user.first_name),
+                reply_markup=main_menu_keyboard(
+                    is_admin,
+                    is_referral_available=config.shop.REFERRER_REWARD_ENABLED,
+                    is_trial_available=is_trial_available,
+                    is_referred_trial_available=is_referred_trial_available,
+                ),
+            )
+        except Exception as e:
+            logger.error(f"Failed to send new main menu message: {e}")
+
+
+@router.callback_query(F.data == NavMain.DISABLE_ADS)
+async def callback_disable_ads(callback: CallbackQuery) -> None:
+    """Handle disable ads button click."""
+    logger.info(f"User {callback.from_user.id} opened disable ads page.")
+    await callback.message.edit_text(
+        text=_("main_menu:message:disable_ads"),
+        reply_markup=main_menu_keyboard(),
+    )
