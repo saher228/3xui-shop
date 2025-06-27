@@ -8,6 +8,7 @@ from app.bot.utils.navigation import (
     NavReferral,
     NavSubscription,
     NavSupport,
+    NavMain,
 )
 
 
@@ -57,6 +58,31 @@ def main_menu_keyboard(
         InlineKeyboardButton(
             text=_("main_menu:button:support"),
             callback_data=NavSupport.MAIN,
+        ),
+    )
+
+    builder.row(
+        InlineKeyboardButton(
+            text=_("main_menu:button:channel"),
+            url="https://t.me/inzeworld_official",
+        ),
+        InlineKeyboardButton(
+            text=_("main_menu:button:discord"),
+            url="https://discord.gg/xTmekE7Urz",
+        ),
+    )
+    
+    builder.row(
+        InlineKeyboardButton(
+            text=_("main_menu:button:terms"),
+            url="https://inzeworld.gitbook.io/inzeworld-info/",
+        ),
+    )
+
+    builder.row(
+        InlineKeyboardButton(
+            text=_("main_menu:button:disable_ads"),
+            callback_data=NavMain.DISABLE_ADS,
         ),
     )
 
